@@ -1,0 +1,13 @@
+#+TITLE: Auto trader
+
+This is a simple automatic trade program.
+It has 2 goals,
+automatic balancing of the portfolio after certain intervals,
+and automatically investing deposited money.
+
+A stretch goal is to include a mechanism for finding valued and undervalued
+shares automatically.
+
+A super stretch goal is to use machine learning to make advanced predictions
+about the stock markets.
+
