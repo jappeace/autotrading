@@ -5,8 +5,16 @@ It has 2 goals,
 automatic balancing of the portfolio after certain intervals,
 and automatically investing deposited money.
 
+For example we specify a ration of 50% bonds, 50% shares.
+Then the program will divide the wealth into that, then after for example a
+month a deposit is made but the value of the shares and bonds has also
+changed, so the program will find a way of re-balancing.
+
+* Stretch goals
 A stretch goal is to include a mechanism for finding valued and undervalued
 shares automatically.
+Then deciding the sell and buy based upon that information.
+To do this we need to know the dividend that is payed over time.
 
 A super stretch goal is to use machine learning to make advanced predictions
 about the stock markets.
