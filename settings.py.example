@@ -1,0 +1,8 @@
+# username created at https://www.ig.com/au/myig/settings/api-keys
+# its not your login
+username='some username'
+password='same for password'
+# created at platform
+api_key='db9f59426c9cf54ec737e8d315aea9d1130349b4'
+# either 'DEMO' or 'LIVE'
+acc_type='DEMO'
