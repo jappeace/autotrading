@@ -35,10 +35,13 @@ def main():
         acc_type=settings.acc_type
     )
 
+    ig_service.create_session()
+    print(ig_service.search_markets("BHP"))
     ig_stream_service = IGStreamService(ig_service)
     ig_session = ig_stream_service.create_session()
     # Ensure settingsured account is selected
     accounts = ig_session[u'accounts']
+    print(accounts)
     accountId = accounts[0]['accountId']
     ig_stream_service.connect(accountId)
 
