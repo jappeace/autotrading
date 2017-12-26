@@ -1,21 +1,37 @@
 #+TITLE: Auto trader
 
-This is a simple automatic trade program.
-It has 2 goals,
-automatic balancing of the portfolio after certain intervals,
-and automatically investing deposited money.
+The initial idea was to make a simple automated trader program.
+I came back from that idea and just decided to make an analyzing program
+that figure out which shares will be good to buy.
 
-For example we specify a ration of 50% bonds, 50% shares.
-Then the program will divide the wealth into that, then after for example a
-month a deposit is made but the value of the shares and bonds has also
-changed, so the program will find a way of re-balancing.
+An initial attempt was made at
+https://docs.google.com/spreadsheets/d/1TeGVvRAvj7H5hvim02c_Bu7TX7oDj0edTmpZjcI5zFA/edit#gid=1923839140
 
-* Stretch goals
-A stretch goal is to include a mechanism for finding valued and undervalued
-shares automatically.
-Then deciding the sell and buy based upon that information.
-To do this we need to know the dividend that is payed over time.
+However google spreadsheet doesn't deal with that many requests well.
+So instead we'll just cache the results. This way we can make our own shadowing
+db maybe that eventually will grow bigger than the 5 years restricted by
+morningstar.
 
-A super stretch goal is to use machine learning to make advanced predictions
-about the stock markets.
+I decided to make this in Haskell because I don't want to have bugs in this
+case.
+Correctness is super important for a tool such as this (in fact doing it in a
+spreadsheet is kindoff crazy but I felt time constraint).
+
+* Program flow
+  1. Download a list of all traded companies on the ASX
+    (australian stock exchange) from here:
+    http://www.asx.com.au/asx/research/ASXListedCompanies.csv
+  2. Fetch financial date per company from monringstar and store it in a file
+     per company. (or ignore if it already exists)
+  3. Fetch the current stock price from google finance.
+  4. Go over all collected data and return a table that's sorted by
+     attractiveness to buy (compared to price).
+
+* Possible extensions.
+  Morining star provides a historic dividend that goes much farther back then 5
+  years. we can use this to calculate a much more precise anuity than just the
+  5 year one.
+  EG:
+  http://globalquote.morningstar.com/globalcomponent/RealtimeHistoricalStockData.ashx?ticker=XASX:BHP&showVol=true&dtype=his&f=d&curry=USD&range=1980-1-1|2014-10-10&isD=true&isS=true&hasF=true&ProdCode=DIRECT
+  
 
