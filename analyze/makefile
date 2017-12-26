@@ -1,3 +1,4 @@
-run:
-	stack build
-	stack exec analyze-exe
+deps:
+	pip install -r requirements.txt
+run: deps
+	python main.py
