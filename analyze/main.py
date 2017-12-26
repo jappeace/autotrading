@@ -1,5 +1,6 @@
 import requests
 import csv
+from pprint import pprint
 
 
 url = "http://financials.morningstar.com/ajax/exportKR2CSV.html?t=%(exchange)s:%(ticker)s"
@@ -11,7 +12,8 @@ def create_url(ticker):
 
 
 def requestcsv(session, url):
-    return session.get(url).content.decode('utf-8').splitlines()
+    result = session.get(url).content.decode('utf-8').splitlines()
+    return result
 
 
 def readcsv(data):
@@ -24,14 +26,15 @@ def readcsv(data):
 def get_financial(session, ticker):
     filename = 'cache/%s.csv' % ticker
     try:
-        with open(filename, 'r', newline='') as cached:
+        with open(filename, newline='') as cached:
             return cached.readlines()
     except FileNotFoundError:
         pass
     result = requestcsv(session, create_url(ticker))
     with open(filename, 'w') as write:
-        write.writelines(result)
+        write.write("\n".join(result))
     return result
+
 
 def main():
     session = requests.Session()
@@ -44,9 +47,15 @@ def main():
     nohead = [row for row in parsed][3:]
     tickers = [row[1] for row in nohead]
     for ticker in tickers:
-        url = create_url(ticker)
         financial = get_financial(session, ticker)
-        print(financial)
+        csv = [row for row in readcsv(financial)]
+        if not csv:
+            continue
+        if csv == [['We’re sorry. There is no available information in our database to display.']]:
+            continue
+        print(ticker)
+        pprint(csv[8])
+        pprint(csv[9])
         
     print(tickers)
 
