@@ -72,10 +72,11 @@ def valuate_anuity(sequence, discount=0.9, count=1):
 def calculate_rating(data):
     eps_ann = valuate_anuity(data.eps) + float_or_zero(data.realtime.eps)
     div_ann = valuate_anuity(data.dividends)
-    if data.realtime.price == '0':
+    price = float(data.realtime.price)
+    if price == 0.0:
         return None
     return RateResult(
-        rating=min(eps_ann, div_ann) / float(data.realtime.price),
+        rating=min(eps_ann, div_ann) / price,
         dividend_valuation=div_ann,
         eps_valuation=eps_ann
     )
@@ -100,20 +101,26 @@ def main():
             continue
         if csv == [['We’re sorry. There is no available information in our database to display.']]:
             continue
-        data = ShareData(
-            ticker=ticker,
-            realtime=find_realtime_stock(session, ticker),
-            eps=reversed(csv[8][1:-1]),
-            dividends=reversed(csv[9][1:-1])
-        )
+
+        try:
+            data = ShareData(
+                ticker=ticker,
+                realtime=find_realtime_stock(session, ticker),
+                eps=reversed(csv[8][1:-1]),
+                dividends=reversed(csv[9][1:-1])
+            )
+        except json.decoder.JSONDecodeError:
+            continue
+
         rating = calculate_rating(data)
-        
-        result.append(PresentRow(
-            ticker=ticker,
-            price=data.realtime.price,
-            name=data.realtime.name,
-            rating=rating
-        ))
+
+        if rating:
+            result.append(PresentRow(
+                ticker=ticker,
+                price=data.realtime.price,
+                name=data.realtime.name,
+                rating=rating
+            ))
 
     pprint(sorted(result, key=lambda it: -it.rating.rating))
       
