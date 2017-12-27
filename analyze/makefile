@@ -1,4 +1,4 @@
 deps:
 	pip install -r requirements.txt
 run: deps
-	python main.py
+	python main.py > result.html

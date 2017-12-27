@@ -3,6 +3,8 @@ import csv
 import json
 from pprint import pprint
 from collections import namedtuple
+from jinja2 import Template
+import logging
 
 
 url = "http://financials.morningstar.com/ajax/exportKR2CSV.html?t=%(exchange)s:%(ticker)s"
@@ -83,8 +85,37 @@ def calculate_rating(data):
 
 
 PresentRow = namedtuple('PresentRow', ['ticker', 'name', 'eps', 'price', 'rating'])
+ViewRow = namedtuple('ViewRow', [
+    'ticker',
+    'percent_eps',
+    'percent_dividend',
+    'percent_earnings',
+    'price',
+    'eps',
+    'dividend',
+    'earnings',
+])
+
+
+def create_view_row(result):
+    price = float(result.price)
+
+    def ratio(num):
+        return (num/price)*100
+
+    return ViewRow(
+        ticker=result.ticker,
+        percent_eps=ratio(float(result.eps)),
+        percent_dividend=ratio(result.rating.dividend_valuation),
+        percent_earnings=ratio(result.rating.eps_valuation),
+        price=price,
+        eps=result.eps,
+        dividend=result.rating.dividend_valuation,
+        earnings=result.rating.eps_valuation,
+    )
 
 def main():
+    logging.basicConfig(filename='progress.log', level=logging.DEBUG)
     session = requests.Session()
     parsed = readcsv(
         requestcsv(
@@ -98,7 +129,7 @@ def main():
     i = 0
     for ticker in tickers:
         i += 1
-        print('doing %s' % ticker)
+        logging.info('doing %s' % ticker)
         financial = get_financial(session, ticker)
         csv = [row for row in readcsv(financial)]
         if not csv:
@@ -130,22 +161,10 @@ def main():
             break
 
     sorted_results = sorted(result, key=lambda it: -it.rating.rating)
+    jinja_results = [create_view_row(row) for row in sorted_results]
+    with open('template.html') as template:
+        print(Template(''.join(template.readlines())).render(results=jinja_results))
 
-    for result in sorted_results:
-        price = float(result.price)
-        def ratio(num):
-            return (num/price)*100
-        print("%(ticker)s: e%%%(percent-eps).1f\td%%%(percent-dividend).1f\tea%%%(percent-earnings).1f\t$%(price).5f,\tceps%(eps)s,\tdiv%(dividend).2f,\tea%(earnings).2f" % {
-            'ticker': result.ticker,
-            'percent-eps': ratio(float(result.eps)),
-            'percent-dividend': ratio(result.rating.dividend_valuation),
-            'percent-earnings': ratio(result.rating.eps_valuation),
-            'price': price,
-            'eps': result.eps,
-            'dividend': result.rating.dividend_valuation,
-            'earnings': result.rating.eps_valuation,
-        })
-      
 
 if __name__ == "__main__":
     main()

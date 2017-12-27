@@ -1,0 +1,30 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <th>ticker</th>
+        <th>current eps%</th>
+        <th>anuity eps%</th>
+        <th>dividend %</th>
+        <th>price</th>
+        <th>current eps</th>
+        <th>anuity eps</th>
+        <th>dividend</th>
+      </tr>
+      {% for row in results %}
+      <tr>
+        <th>{{ row.ticker }}</th>
+        <th>%{{ row.percent_eps|round(2) }}</th>
+        <th>%{{ row.percent_earnings|round(2) }}</th>
+        <th>%{{ row.percent_dividend|round(2) }}</th>
+        <th>${{ row.price }}</th>
+        <th>{{ row.eps }}</th>
+        <th>{{ row.dividend | round(4) }}</th>
+        <th>{{ row.earnings | round(4) }}</th>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
