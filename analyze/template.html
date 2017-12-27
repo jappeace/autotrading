@@ -12,6 +12,7 @@ table{
 	text-align:left;
 }
   </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
 
   </head>
   <body>
@@ -29,9 +30,15 @@ table{
       {% for row in results %}
       <tr>
         <th>{{ row.ticker }}</th>
-        <th>%{{ row.percent_eps|round(2) }}</th>
-        <th>%{{ row.percent_earnings|round(2) }}</th>
-        <th>%{{ row.percent_dividend|round(2) }}</th>
+        <th class="percent-eps" data-percent="{{ row.percent_eps|round(2) }}">%
+          {{ row.percent_eps|round(2) }}
+        </th>
+        <th class="percent-earnings" data-percent="{{ row.percent_earnings|round(2) }}">
+          %{{ row.percent_earnings|round(2) }}
+        </th>
+        <th class="percent-dividend" data-percent="{{ row.percent_dividend|round(2) }}">
+          %{{ row.percent_dividend|round(2) }}
+        </th>
         <th>${{ row.price }}</th>
         <th>{{ row.eps }}</th>
         <th>{{ row.dividend | round(4) }}</th>
@@ -39,5 +46,10 @@ table{
       </tr>
       {% endfor %}
     </table>
+    <script>
+    $( document ).ready(function() {
+       
+     });
+    </script>
   </body>
 </html>
