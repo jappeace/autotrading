@@ -50,7 +50,6 @@ RateResult = namedtuple('RateResult', [
     'dividend_valuation',
     'eps_valuation'
 ])
-PresentRow = namedtuple('PresentRow', ['ticker', 'name', 'price', 'rating'])
 
 
 def find_realtime_stock(session, ticker):
@@ -70,17 +69,20 @@ def valuate_anuity(sequence, discount=0.9, count=1):
 
 
 def calculate_rating(data):
-    eps_ann = valuate_anuity(data.eps) + float_or_zero(data.realtime.eps)
+    cur_eps = float_or_zero(data.realtime.eps)
+    eps_ann = valuate_anuity(data.eps) + cur_eps
     div_ann = valuate_anuity(data.dividends)
     price = float(data.realtime.price)
     if price == 0.0:
         return None
     return RateResult(
-        rating=min(eps_ann, div_ann) / price,
+        rating=(min(eps_ann, div_ann) + cur_eps) / price ,
         dividend_valuation=div_ann,
         eps_valuation=eps_ann
     )
 
+
+PresentRow = namedtuple('PresentRow', ['ticker', 'name', 'eps', 'price', 'rating'])
 
 def main():
     session = requests.Session()
@@ -93,7 +95,9 @@ def main():
     nohead = [row for row in parsed][3:]
     tickers = [row[1] for row in nohead]
     result = []
+    i = 0
     for ticker in tickers:
+        i += 1
         print('doing %s' % ticker)
         financial = get_financial(session, ticker)
         csv = [row for row in readcsv(financial)]
@@ -117,12 +121,30 @@ def main():
         if rating:
             result.append(PresentRow(
                 ticker=ticker,
+                eps=data.realtime.eps,
                 price=data.realtime.price,
                 name=data.realtime.name,
                 rating=rating
             ))
+        if i > 5:
+            break
 
-    pprint(sorted(result, key=lambda it: -it.rating.rating))
+    sorted_results = sorted(result, key=lambda it: -it.rating.rating)
+
+    for result in sorted_results:
+        price = float(result.price)
+        def ratio(num):
+            return (num/price)*100
+        print("%(ticker)s: e%%%(percent-eps).1f\td%%%(percent-dividend).1f\tea%%%(percent-earnings).1f\t$%(price).5f,\tceps%(eps)s,\tdiv%(dividend).2f,\tea%(earnings).2f" % {
+            'ticker': result.ticker,
+            'percent-eps': ratio(float(result.eps)),
+            'percent-dividend': ratio(result.rating.dividend_valuation),
+            'percent-earnings': ratio(result.rating.eps_valuation),
+            'price': price,
+            'eps': result.eps,
+            'dividend': result.rating.dividend_valuation,
+            'earnings': result.rating.eps_valuation,
+        })
       
 
 if __name__ == "__main__":
