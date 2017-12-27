@@ -6,6 +6,8 @@ from collections import namedtuple
 from jinja2 import Template
 import logging
 import argparse
+from datetime import datetime
+
 
 url = "http://financials.morningstar.com/ajax/exportKR2CSV.html?t=%(exchange)s:%(ticker)s"
 exchange = "XASX"
@@ -40,7 +42,6 @@ def get_financial(session, ticker):
     return result
 
 
-Realtime = namedtuple('Realtime', ['price', 'eps', 'name', 'url'])
 ShareData = namedtuple('ShareData', [
     'ticker',
     'realtime',
@@ -53,11 +54,49 @@ RateResult = namedtuple('RateResult', [
     'eps_valuation'
 ])
 
+def chunks(array, chunksize):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(array), chunksize):
+        yield array[i:i + chunksize]
+
+Realtime = namedtuple('Realtime', [
+    'ticker',
+    'price',
+    'high',
+    'low',
+    'volume',
+    'timestamp'
+])
 
 def find_realtime_stock(session, ticker):
-    response = session.get('https://finance.google.com/finance?q=ASX:%s&output=json' % ticker)
-    son = json.loads(response.content[6:-2].decode('unicode_escape'))
-    return Realtime(price=son['l'], eps=son['eps'], name=son['name'], url=son['f_reuters_url'])
+    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=%(ticker)s.AX&interval=1min&apikey=%(key)s'
+    api_key = ""
+    with open('key') as keyfile:
+        api_key = keyfile.readline()
+    formated_uri = url % {
+        'ticker': ticker,
+        'key': api_key
+    }
+    logging.debug(formated_uri)
+    response = session.get(formated_uri)
+    son = json.loads(response.text)
+    dict_key = "Time Series (1min)"
+    if dict_key not in son:
+        return None
+    series = son[dict_key]
+    collected = [(datetime.strptime(time, "%Y-%m-%d %H:%M:%S"), data) for time, data in series.items()]
+    sort = sorted(collected, key=lambda a: a[0])
+
+    latest = sort[-1]
+    logging.debug(latest)
+    return Realtime(
+        timestamp=latest[0],
+        ticker=ticker,
+        price=latest[1]['4. close'],
+        high=latest[1]['2. high'],
+        low=latest[1]['3. low'],
+        volume=latest[1]['5. volume'],
+    )
 
 def float_or_zero(string):
     return float(string) if string else 0
@@ -71,35 +110,36 @@ def valuate_anuity(sequence, discount=0.9, count=1):
 
 
 def calculate_rating(data):
-    cur_eps = float_or_zero(data.realtime.eps)
-    eps_ann = valuate_anuity(data.eps) + cur_eps
+    eps_ann = valuate_anuity(data.eps)
     div_ann = valuate_anuity(data.dividends)
     price = float(data.realtime.price)
     if price == 0.0:
         return None
     return RateResult(
-        rating=(min(eps_ann, div_ann) + cur_eps) / price ,
+        rating=(min(eps_ann, div_ann)) / price,
         dividend_valuation=div_ann,
         eps_valuation=eps_ann
     )
 
 
-PresentRow = namedtuple('PresentRow', ['ticker', 'name', 'eps', 'price', 'rating', 'url'])
+PresentRow = namedtuple('PresentRow', ['ticker', 'realtime', 'rating'])
 ViewRow = namedtuple('ViewRow', [
     'ticker',
-    'percent_eps',
     'percent_dividend',
     'percent_earnings',
     'price',
-    'eps',
+    'time',
     'dividend',
     'earnings',
-    'url'
+    'url',
+    'high',
+    'low',
+    'volume'
 ])
 
 
 def create_view_row(result):
-    price = float(result.price)
+    price = float(result.realtime.price)
 
     def ratio(num):
         return (num/price)*100
@@ -107,14 +147,17 @@ def create_view_row(result):
     logging.debug('converting %s' % result.ticker)
     return ViewRow(
         ticker=result.ticker,
-        percent_eps=ratio(float(result.eps)),
         percent_dividend=ratio(result.rating.dividend_valuation),
         percent_earnings=ratio(result.rating.eps_valuation),
         price=price,
-        eps=result.eps,
+        time=result.realtime.timestamp,
         dividend=result.rating.dividend_valuation,
         earnings=result.rating.eps_valuation,
-        url=result.url
+        url="http://stocks.us.reuters.com/stocks/ratios.asp?rpc=66&symbol=%s.AX" % result.ticker,
+        high=result.realtime.high,
+        low=result.realtime.low,
+        volume=result.realtime.volume,
+
     )
 
 def main():
@@ -137,6 +180,7 @@ def main():
         )
         nohead = [row for row in parsed][3:]
         tickers = [row[1] for row in nohead]
+
     result = []
     for ticker in tickers:
         logging.info('doing %s' % ticker)
@@ -157,16 +201,16 @@ def main():
         except json.decoder.JSONDecodeError:
             continue
 
+        if not data.realtime:
+            continue
+
         rating = calculate_rating(data)
 
         if rating:
             result.append(PresentRow(
                 ticker=ticker,
-                eps=data.realtime.eps,
-                price=data.realtime.price,
-                name=data.realtime.name,
+                realtime=data.realtime,
                 rating=rating,
-                url=data.realtime.url
             ))
 
     sorted_results = sorted(result, key=lambda it: -it.rating.rating)

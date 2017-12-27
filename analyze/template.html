@@ -18,30 +18,32 @@ table{
     <table>
       <tr>
         <th>ticker</th>
-        <th>current eps%</th>
         <th>anuity eps%</th>
         <th>dividend %</th>
         <th>price</th>
-        <th>current eps</th>
         <th>anuity eps</th>
         <th>dividend</th>
+        <th> time </th>
+        <th> high </th>
+        <th> low </th>
+        <th> volume </th>
       </tr>
       {% for row in results %}
       <tr>
-        <th><a href="{{row.url}}"> {{ row.ticker }}</a></th>
-        <th class="percent-eps" data-percent="{{ row.percent_eps|round(2) }}">%
-          {{ row.percent_eps|round(2) }}
-        </th>
-        <th class="percent-earnings" data-percent="{{ row.percent_earnings|round(2) }}">
+        <td><a href="{{row.url}}"> {{ row.ticker }}</a></td>
+        <td class="percent-earnings" data-percent="{{ row.percent_earnings|round(2) }}">
           %{{ row.percent_earnings|round(2) }}
-        </th>
-        <th class="percent-dividend" data-percent="{{ row.percent_dividend|round(2) }}">
+        </td>
+        <td class="percent-dividend" data-percent="{{ row.percent_dividend|round(2) }}">
           %{{ row.percent_dividend|round(2) }}
-        </th>
-        <th>${{ row.price }}</th>
-        <th>{{ row.eps }}</th>
-        <th>{{ row.dividend | round(4) }}</th>
-        <th>{{ row.earnings | round(4) }}</th>
+        </td>
+        <td>${{ row.price }}</td>
+        <td>{{ row.dividend | round(4) }}</td>
+        <td>{{ row.earnings | round(4) }}</td>
+        <td> {{ row.time.strftime('%d %H:%M:%S') }} </td>
+        <td> {{ row.high }}</td>
+        <td> {{ row.low }}</td>
+        <td> {{ row.volume }}</td>
       </tr>
       {% endfor %}
     </table>
