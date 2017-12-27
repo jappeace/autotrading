@@ -28,7 +28,7 @@ table{
       </tr>
       {% for row in results %}
       <tr>
-        <th>{{ row.ticker }}</th>
+        <th><a href="{{row.url}}"> {{ row.ticker }}</a></th>
         <th class="percent-eps" data-percent="{{ row.percent_eps|round(2) }}">%
           {{ row.percent_eps|round(2) }}
         </th>

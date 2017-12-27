@@ -5,6 +5,7 @@ from pprint import pprint
 from collections import namedtuple
 from jinja2 import Template
 import logging
+import argparse
 
 
 url = "http://financials.morningstar.com/ajax/exportKR2CSV.html?t=%(exchange)s:%(ticker)s"
@@ -40,7 +41,7 @@ def get_financial(session, ticker):
     return result
 
 
-Realtime = namedtuple('Realtime', ['price', 'eps', 'name'])
+Realtime = namedtuple('Realtime', ['price', 'eps', 'name', 'url'])
 ShareData = namedtuple('ShareData', [
     'ticker',
     'realtime',
@@ -57,7 +58,7 @@ RateResult = namedtuple('RateResult', [
 def find_realtime_stock(session, ticker):
     response = session.get('https://finance.google.com/finance?q=ASX:%s&output=json' % ticker)
     son = json.loads(response.content[6:-2].decode('unicode_escape'))
-    return Realtime(price=son['l'], eps=son['eps'], name=son['name'])
+    return Realtime(price=son['l'], eps=son['eps'], name=son['name'], url=son['f_reuters_url'])
 
 def float_or_zero(string):
     return float(string) if string else 0
@@ -84,7 +85,7 @@ def calculate_rating(data):
     )
 
 
-PresentRow = namedtuple('PresentRow', ['ticker', 'name', 'eps', 'price', 'rating'])
+PresentRow = namedtuple('PresentRow', ['ticker', 'name', 'eps', 'price', 'rating', 'url'])
 ViewRow = namedtuple('ViewRow', [
     'ticker',
     'percent_eps',
@@ -94,6 +95,7 @@ ViewRow = namedtuple('ViewRow', [
     'eps',
     'dividend',
     'earnings',
+    'url'
 ])
 
 
@@ -112,23 +114,31 @@ def create_view_row(result):
         eps=result.eps,
         dividend=result.rating.dividend_valuation,
         earnings=result.rating.eps_valuation,
+        url=result.url
     )
 
 def main():
     logging.basicConfig(filename='progress.log', level=logging.DEBUG)
     session = requests.Session()
-    parsed = readcsv(
-        requestcsv(
-            session,
-            'http://www.asx.com.au/asx/research/ASXListedCompanies.csv'
-        )
+
+    parser  = argparse.ArgumentParser(
+        description='Valuates shares on the ASX, probably quite naivly'
     )
-    nohead = [row for row in parsed][3:]
-    tickers = [row[1] for row in nohead]
+    parser.add_argument('tickers', nargs='*')
+    args = parser.parse_args()
+
+    tickers = args.tickers
+    if not args.tickers:
+        parsed = readcsv(
+            requestcsv(
+                session,
+                'http://www.asx.com.au/asx/research/ASXListedCompanies.csv'
+            )
+        )
+        nohead = [row for row in parsed][3:]
+        tickers = [row[1] for row in nohead]
     result = []
-    i = 0
     for ticker in tickers:
-        i += 1
         logging.info('doing %s' % ticker)
         financial = get_financial(session, ticker)
         csv = [row for row in readcsv(financial)]
@@ -155,10 +165,9 @@ def main():
                 eps=data.realtime.eps,
                 price=data.realtime.price,
                 name=data.realtime.name,
-                rating=rating
+                rating=rating,
+                url=data.realtime.url
             ))
-        if i > 5:
-            break
 
     sorted_results = sorted(result, key=lambda it: -it.rating.rating)
     jinja_results = [create_view_row(row) for row in sorted_results]
