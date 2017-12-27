@@ -7,7 +7,6 @@ from jinja2 import Template
 import logging
 import argparse
 
-
 url = "http://financials.morningstar.com/ajax/exportKR2CSV.html?t=%(exchange)s:%(ticker)s"
 exchange = "XASX"
 
@@ -105,6 +104,7 @@ def create_view_row(result):
     def ratio(num):
         return (num/price)*100
 
+    logging.debug('converting %s' % result.ticker)
     return ViewRow(
         ticker=result.ticker,
         percent_eps=ratio(float(result.eps)),
