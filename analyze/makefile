@@ -1,7 +1,8 @@
 deps:
 	pip install -r requirements.txt
 
-TICKERS=ONT TGP	1ST 1PG MOQ T3D
+# empty for everything
+TICKERS=
 
 test: deps
 	python test.py

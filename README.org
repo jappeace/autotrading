@@ -12,21 +12,26 @@ So instead we'll just cache the results. This way we can make our own shadowing
 db maybe that eventually will grow bigger than the 5 years restricted by
 morningstar.
 
-I decided to make this in Haskell because I don't want to have bugs in this
-case.
-Correctness is super important for a tool such as this (in fact doing it in a
-spreadsheet is kindoff crazy but I felt time constraint).
 
-* Program flow
-  1. Download a list of all traded companies on the ASX
-    (australian stock exchange) from here:
-    http://www.asx.com.au/asx/research/ASXListedCompanies.csv
-  2. Fetch financial date per company from monringstar and store it in a file
-     per company. (or ignore if it already exists)
-  3. Fetch the current stock price from google finance.
-  4. Go over all collected data and return a table that's sorted by
-     attractiveness to buy (compared to price).
+* Current functionality
++ Scrape [[http://www.asx.com.au/][asx]] for semi realtime stock prices (Google finance is unreliable,
+  alpha-vantage is rate limited at 1 request per second, and doesn't allow
+  batch requests, see the branches).
++ Get and cache key indicators from the morningstar [[https://gist.github.com/hahnicity/45323026693cdde6a116][api]].
++ Produce a html table which is ordered by 'bargains', shares that are known to
+  produce lots of dividend or profit (minimum of either) divided by price.
 
+  I also played around with the IG api but it's poorly documented
+  (what is an EPIC for example)
+  so the main program is in the analyze folder. just run =make run=.
+  
+  the html result has links to the reuters page so you can verify it's indeed a
+  good idea to buy.
+  There is also a link to the anouncements page of asx.
+  
+  Note that the morningstar stuff is cached, because it takes ages to run that
+  for the first time. I also had the idea of making an append like thing from
+  the cached but haven't gotten to do that.
 * Possible extensions.
   Morining star provides a historic dividend that goes much farther back then 5
   years. we can use this to calculate a much more precise anuity than just the
