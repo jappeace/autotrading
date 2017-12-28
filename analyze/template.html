@@ -27,6 +27,7 @@ table{
         <th> high </th>
         <th> low </th>
         <th> volume </th>
+        <th> anounce </th>
       </tr>
       {% for row in results %}
       <tr>
@@ -44,6 +45,7 @@ table{
         <td> {{ row.high }}</td>
         <td> {{ row.low }}</td>
         <td> {{ row.volume }}</td>
+        <td><a href="http://www.asx.com.au/asx/statistics/announcements.do?by=asxCode&asxCode={{row.ticker}}&timeframe=D&period=W">recent</a> </td>
       </tr>
       {% endfor %}
     </table>
