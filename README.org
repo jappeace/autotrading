@@ -38,6 +38,21 @@ morningstar.
   EG:
   http://globalquote.morningstar.com/globalcomponent/RealtimeHistoricalStockData.ashx?ticker=XASX:BHP&showVol=true&dtype=his&f=d&curry=USD&range=1980-1-1|2014-10-10&isD=true&isS=true&hasF=true&ProdCode=DIRECT
   
+** TODO Back testing to test different analises methodologies upon
+   thanks to [[https://www.reddit.com/r/investing/comments/7mzono/just_started_investing_made_a_little_opensource/dry5ed1/][/u/enginerd03]]
+   https://www.quantopian.com/
 
+** TODO all these things
+   (thanks to [[https://www.reddit.com/r/investing/comments/7mzono/just_started_investing_made_a_little_opensource/dryftqf/][/u/wanmoar]])
+- use operating cash flow (or free cash flow) to see the payout rates.
+  net income is an accounting measure and generally not fit for purpose
+- need to factor in price movements, dividend increases and trend in
+  sales/cash flow/earnings.
+  A company which has a longer history of consistent dividend increases is likely a better bargain for the same % dividend than one which has no such record or a sporadic one
+- find a way to remove the effect of debt. A company may have a very high dividend and be able to pay it out but not have enough to pay off the debt it owes. As a result, it's dividend is high because the market expects it to be cut
+
+you will need a whole other model to judge dividends for financials (banks, insurance etc), royalty companies and REIT's
+   
+** TODO Encode a data driven approach??
 * License
   AGPLV3
