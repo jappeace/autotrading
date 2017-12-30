@@ -5,7 +5,7 @@ I came back from that idea and just decided to make an analyzing program
 that figure out which shares will be good to buy.
 
 An initial attempt was made at
-https://docs.google.com/spreadsheets/d/1TeGVvRAvj7H5hvim02c_Bu7TX7oDj0edTmpZjcI5zFA/edit#gid=1923839140
+https://docs.google.com/spreadsheets/d/1TeGVvRAvj7H5hvim02c_Bu7TX7oDj0edTmpZjcI5zFA/edit?usp=sharing
 
 However google spreadsheet doesn't deal with that many requests well.
 So instead we'll just cache the results. This way we can make our own shadowing
