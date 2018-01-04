@@ -46,10 +46,22 @@ morningstar.
    (thanks to [[https://www.reddit.com/r/investing/comments/7mzono/just_started_investing_made_a_little_opensource/dryftqf/][/u/wanmoar]])
 - use operating cash flow (or free cash flow) to see the payout rates.
   net income is an accounting measure and generally not fit for purpose
+  - Investopedia aggrees https://www.investopedia.com/articles/analyst/03/122203.asp
+  - So we need an operating cashflow per share, luckily morningstar provides
+    share count and operating cashflow count
 - need to factor in price movements, dividend increases and trend in
   sales/cash flow/earnings.
-  A company which has a longer history of consistent dividend increases is likely a better bargain for the same % dividend than one which has no such record or a sporadic one
-- find a way to remove the effect of debt. A company may have a very high dividend and be able to pay it out but not have enough to pay off the debt it owes. As a result, it's dividend is high because the market expects it to be cut
+  A company which has a longer history of consistent dividend increases is
+  likely a better bargain for the same % dividend than one which has no such
+  record or a sporadic one.
+  - This seems rather obvious
+- find a way to remove the effect of debt.
+  A company may have a very high dividend and be able to pay it out but not
+  have enough to pay off the debt it owes.
+  As a result, it's dividend is high because the market expects it to be cut
+  - This is a really good idea, because the opposite is also true,
+    if a company is paying down debt agressively while not paying dividend it
+    still may be a good investment.
 
 you will need a whole other model to judge dividends for financials (banks, insurance etc), royalty companies and REIT's
    
