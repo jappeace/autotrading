@@ -3,6 +3,7 @@ Gather historic information from morningstart
 cache it in a subdir cause it takes ages
 """
 import csv
+from collections import namedtuple
 
 url = "http://financials.morningstar.com/ajax/exportKR2CSV.html?t=%(exchange)s:%(ticker)s"
 exchange = "XASX"
@@ -23,7 +24,6 @@ def readcsv(data):
         delimiter=','
     )
 
-
 def get_financial(session, ticker):
     filename = 'cache/%s.csv' % ticker
     try:
@@ -35,6 +35,28 @@ def get_financial(session, ticker):
     with open(filename, 'w') as write:
         write.write("\n".join(result))
     return result
+MorningData = namedtuple('MorningData', ['eps', 'dividends', 'cps'])
+
+def financial_table(data) -> MorningData:
+    csv = [row for row in readcsv(data)]
+    if not csv:
+        return None
+    if csv == [['We’re sorry. There is no available information in our database to display.']]:
+        return None
+    return MorningData(
+        eps=eps_row(csv), 
+        dividends=dividends(csv), 
+        cps=cps_row(csv)
+    )
+
+def eps_row(table):
+    return table[8][1:]
+
+def dividends(table):
+    return table[9][1:]
+
+def cps_row(table):
+    return table[16][1:-1]
 
 """
     This file is part of autotrader/analyzer.

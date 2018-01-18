@@ -14,6 +14,7 @@ RateResult = namedtuple('RateResult', [
 def valuate_anuity(sequence, discount=0.9, count=1):
     suming = 0
     for item in sequence:
+        logging.info(item)
         if not item:
             return None
         num = float(item)

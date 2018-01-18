@@ -56,6 +56,7 @@ def create_view_row(result):
         volume=result.realtime.volume,
     )
 
+
 def main():
     logging.basicConfig(filename='progress.log', level=logging.DEBUG)
     session = requests.Session()
@@ -81,25 +82,23 @@ def main():
     realtimes = realtime.find_realtime_stocks(session, *tickers)
     for ticker in tickers:
         logging.info('doing %s' % ticker)
-        financial = morningstar.get_financial(session, ticker)
-        csv = [row for row in morningstar.readcsv(financial)]
-        if not csv:
+        financial = morningstar.financial_table(morningstar.get_financial(session, ticker))
+        if financial is None:
             continue
-        if csv == [['We’re sorry. There is no available information in our database to display.']]:
-            continue
-
         try:
+            logging.info(financial.cps)
             data = ShareData(
                 ticker=ticker,
                 realtime=realtimes.get(ticker),
-                eps=reversed(csv[8][1:]),
-                dividends=reversed(csv[9][1:])
+                eps=reversed(financial.cps), # we'll use cps because more reliable
+                dividends=reversed(financial.dividends)
             )
         except json.decoder.JSONDecodeError:
             continue
 
         if not data.realtime:
             continue
+        logging.info(data)
         rating = rate.calculate_rating(data)
 
         if rating:
@@ -109,7 +108,9 @@ def main():
                 rating=rating,
             ))
 
+    logging.info(result)
     sorted_results = sorted(result, key=lambda it: -it.rating.rating)
+    logging.info(sorted_results)
     jinja_results = [create_view_row(row) for row in sorted_results]
     with open('template.html') as template:
         print(Template(''.join(template.readlines())).render(results=jinja_results))
