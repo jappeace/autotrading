@@ -6,5 +6,5 @@ MarkupSafe==1.0
 pytz==2017.3
 requests==2.20.0
 simplejson==3.13.2
-urllib3==1.24.2
+urllib3==1.26.5
 yahoo-finance==1.4.0
